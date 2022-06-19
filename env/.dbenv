@@ -1,0 +1,3 @@
+MYSQL_PASSWORD=S3cret
+MYSQL_USER=alerter
+MYSQL_DATABASE=alerts
