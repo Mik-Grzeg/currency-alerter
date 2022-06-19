@@ -15,6 +15,10 @@ func (s *Server) createNewAlert(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(reqBody, &newAlert)
 	w.Header().Set("Content-Type", "application/json")
 
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Accept, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	newId, createdAlertErr := s.AddAlert(&newAlert)
 	if createdAlertErr != nil {
 		w.WriteHeader(http.StatusBadRequest)
