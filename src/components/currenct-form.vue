@@ -21,7 +21,7 @@
         >
             <v-select
             filled
-          :items="['EUR/PLN','USD/PLN','CHF/PLN','PLN/EUR','PLN/USD','PLN/CHF']"
+          :items="['EUR','USD','CHF']"
           v-model="alert.currency"
           label="Currency"
           dense
@@ -33,7 +33,7 @@
         >
             <v-select
           v-model="alert.threshold"
-          :items="['Above','Below']"
+          :items="['<','>']"
           label="Threshold"
           dense
         ></v-select>
