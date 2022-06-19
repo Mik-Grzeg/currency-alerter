@@ -39,7 +39,7 @@ var mysqlFlags = []cli.Flag{
 var serverPort = &cli.UintFlag{
 	Name:  "port",
 	Usage: "Port that the server will be server on",
-	Value: 5000,
+	Value: 8000,
 }
 
 func main() {

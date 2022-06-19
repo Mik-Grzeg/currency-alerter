@@ -11,4 +11,4 @@ Run the command below in order to create neccesary services
 docker-compose up -d 
 ```
 
-By default service with Http endpoint for creating alerts is exposed at `:5000` port
+By default service with Http endpoint for creating alerts is exposed at `:8000` port
