@@ -10,19 +10,17 @@ VALUES(?, ?, ?, ?)
 ON DUPLICATE KEY UPDATE money=?, triggered=?;
 `
 
-func (s *Server) AddAlert(alert *Alert) (*int64, error) {
+func (s *Server) AddAlert(alert *Alert) error {
 
 	result, insertErr := s.con.Db.Exec(upsertAlertQuery, alert.Money, alert.Currency, alert.Operator, alert.Email, alert.Money, false)
 	if insertErr != nil {
 		log.Errorf("Failed to insert alert: %v with error: %v", alert, insertErr)
-		return nil, insertErr
+		return insertErr
 	}
 
-	lastInsertId, lastInsertIdErr := result.LastInsertId()
-	if lastInsertIdErr != nil {
-		return nil, lastInsertIdErr
+	if _, lastInsertIdErr := result.LastInsertId(); lastInsertIdErr != nil {
+		return lastInsertIdErr
 	}
-	log.Debugf("New data inserted to alert with id: %d", lastInsertId)
 
-	return &lastInsertId, nil
+	return nil
 }

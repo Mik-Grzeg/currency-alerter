@@ -50,11 +50,17 @@ func buildTriggeredUpdateQuery(ids []uint) ([]interface{}, string) {
 	return args, query
 }
 
-func (w *Worker) triggerAlerts(alerts []*Alert, c map[string]float32) error {
+func (w *Worker) triggerAlerts(alerts []*Alert, c map[string]float32, triggeredAlertChan chan triggeredAlert) error {
 	ids := make([]uint, 0, len(alerts))
 	for _, alert := range alerts {
 		if !alert.Triggered && alert.isAlertTriggered(c[alert.Currency]) {
 			ids = append(ids, alert.Id)
+			shouldTriggerAlert := triggeredAlert{
+				alert:        alert,
+				currentValue: c[alert.Currency],
+			}
+
+			triggeredAlertChan <- shouldTriggerAlert
 			log.Debugf("Triggering : for %s\n with state %t with condition x %s %f Current rate of %s %f", alert.Email, alert.Triggered, alert.Operator, alert.Money, alert.Currency, c[alert.Currency])
 		}
 	}
@@ -83,9 +89,14 @@ func (w *Worker) triggerAlerts(alerts []*Alert, c map[string]float32) error {
 	return nil
 }
 
-func checkAlerts(w *Worker, c map[string]float32) {
+type triggeredAlert struct {
+	alert        *Alert
+	currentValue float32
+}
+
+func checkAlerts(w *Worker, c map[string]float32, triggeredAlertsChan chan triggeredAlert) {
 	alerts := w.getAlerts()
 	log.Info("Checking alerts ...")
 
-	w.triggerAlerts(alerts, c)
+	w.triggerAlerts(alerts, c, triggeredAlertsChan)
 }

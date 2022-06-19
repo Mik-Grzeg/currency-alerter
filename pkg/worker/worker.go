@@ -11,6 +11,7 @@ import (
 type WorkerSettings struct {
 	ClientTimeout  uint
 	ScrapeInterval uint
+	MailerSettings *MailerSettings
 }
 
 type Worker struct {
@@ -31,10 +32,17 @@ func NewWorker(settings *WorkerSettings, user, passwd, addr, dbname string) *Wor
 func (w *Worker) Run() error {
 	currencies := make(map[string]float32)
 	recheck := make(chan bool)
+	triggeredAlerts := make(chan triggeredAlert)
+
+	mailer := MailGun{}
 
 	go func() {
 		for {
-			tables := w.getNBPRates()
+			tables, fetcherErr := w.getNBPRates()
+			if fetcherErr != nil {
+				continue
+			}
+
 			tables.ToMap(currencies, recheck)
 
 			time.Sleep(time.Duration(w.settings.ScrapeInterval) * time.Second)
@@ -44,13 +52,21 @@ func (w *Worker) Run() error {
 	for {
 		select {
 		case <-recheck:
-			checkAlerts(w, currencies)
+			go func() {
+				checkAlerts(w, currencies, triggeredAlerts)
+			}()
 			log.Info("Running alerts recheck after fetching data from nbp api")
+		case t := <-triggeredAlerts:
+			go func(trigAlert *triggeredAlert) {
+				log.Debug("Spawned go routine for notyfing")
+				mailer.NotifyViaMail(w.settings.MailerSettings, trigAlert)
+			}(&t)
 		case <-time.After(time.Duration(w.settings.ScrapeInterval/3) * time.Second):
-			checkAlerts(w, currencies)
+			go func() {
+				checkAlerts(w, currencies, triggeredAlerts)
+			}()
 			log.Infof("Running alerts recheck after %dsec", int(w.settings.ScrapeInterval/3))
 		}
 	}
 
-	return nil
 }

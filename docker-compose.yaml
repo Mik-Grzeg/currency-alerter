@@ -32,5 +32,6 @@ services:
       - --nbp-fetch-interval=30
     env_file:
       - env/.dbenv
+      - env/.mailer
 volumes:
   db: 

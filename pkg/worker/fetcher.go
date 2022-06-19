@@ -30,17 +30,19 @@ type Currencies struct {
 	Mid      float32 `json:"mid"`
 }
 
-func (w *Worker) getNBPRates() *Tables {
+func (w *Worker) getNBPRates() (*Tables, error) {
 	endpoint := "http://api.nbp.pl/api/exchangerates/tables/A"
 
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
-		log.Fatalf("Error occurred while creating new request. %+v", err)
+		log.Errorf("Error occurred while creating new request. %+v", err)
+		return nil, err
 	}
 
 	response, err := w.client.Do(req)
 	if err != nil {
-		log.Fatalf("Error sending request to API endpoint. %+v", err)
+		log.Errorf("Error sending request to API endpoint. %+v", err)
+		return nil, err
 	}
 	// Close the connection to reuse it
 	defer response.Body.Close()
@@ -49,12 +51,14 @@ func (w *Worker) getNBPRates() *Tables {
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		//Failed to read response.
-		log.Fatalf("There was an error reading response body: %+v", err)
+		log.Errorf("There was an error reading response body: %+v", err)
+		return nil, err
 	}
 
 	var tables Tables
 	if errBodyDecode := json.Unmarshal(body, &tables); errBodyDecode != nil {
-		log.Fatalf("Error parsing body %+v", errBodyDecode)
+		log.Errorf("Error parsing body %+v", errBodyDecode)
+		return nil, errBodyDecode
 	}
-	return &tables
+	return &tables, nil
 }

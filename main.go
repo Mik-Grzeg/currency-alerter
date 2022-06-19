@@ -91,12 +91,26 @@ func main() {
 						Usage: "Interval between api calls in order to retrieve nbp rates",
 						Value: 60 * 30,
 					},
+					&cli.StringFlag{
+						Name:    "mailgun-domain",
+						Usage:   "MailGun domain",
+						EnvVars: []string{"MAILGUN_DOMAIN"},
+					},
+					&cli.StringFlag{
+						Name:    "mailgun-apikey",
+						Usage:   "MailGun api key",
+						EnvVars: []string{"MAILGUN_APIKEY"},
+					},
 				),
 				Action: func(c *cli.Context) error {
 					return worker.NewWorker(
 						&worker.WorkerSettings{
 							ClientTimeout:  c.Uint("http-client-timeout"),
 							ScrapeInterval: c.Uint("nbp-fetch-interval"),
+							MailerSettings: &worker.MailerSettings{
+								Domain: c.String("mailgun-domain"),
+								ApiKey: c.String("mailgun-apikey"),
+							},
 						},
 						c.String("mysql-user"),
 						c.String("mysql-passwd"),
