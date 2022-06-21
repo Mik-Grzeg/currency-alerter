@@ -54,15 +54,15 @@
       <v-row>
           <v-col>
             <v-btn
-                class="mr-4 buttons-width" 
+                class="mr-4 buttons-width"
                 color="success"
-                @click="submit"
+                @click="$emit('createdNotification',alert)"
                 >
                 submit
              </v-btn>
           </v-col>
           <v-col>
-                  <v-btn color="info" @click="reset" class="buttons-width">
+              <v-btn color="info" @click="reset" class="buttons-width">
       clear
     </v-btn>
           </v-col>
@@ -72,6 +72,12 @@
 </template>
 <script lang="ts">
 import apiService from "@/service/apiService"
+type alert = {
+  money: string,
+  currency: string,
+  threshold: string,
+  email: string,
+}
   export default {
     data: () => ({
       valid: false,
@@ -80,7 +86,7 @@ import apiService from "@/service/apiService"
         currency:'',
         threshold:'',
         email: '',
-      } as any,
+      } as alert,
       nameRules: [
         (        v: string) => !!v || 'Name is required',
         (        v: string) => v.length <= 10 || 'Name must be less than 10 characters',
@@ -91,16 +97,19 @@ import apiService from "@/service/apiService"
       ],
     }),
     methods: {
+      alert: {
+        money:'',
+        currency:'',
+        threshold:'',
+        email: '',
+      } as alert,
+
         reset(): void {
             this.alert.email = ''
             this.alert.money = ''
             this.alert.currency = ''
             this.alert.threshold = ''
         },
-
-        submit(): void {
-          apiService.postAlert(this.alert)
-        }
     }
   }
 </script>
