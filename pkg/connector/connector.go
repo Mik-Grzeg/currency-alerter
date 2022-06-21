@@ -26,7 +26,7 @@ func (c *Connector) HealthCheck() error {
 	}
 
 	if pingErr != nil {
-		log.Fatalf("Database does not response to pings: %v", pingErr)
+		log.Errorf("Database does not response to pings: %v", pingErr)
 		return pingErr
 	}
 	return nil
@@ -54,7 +54,9 @@ func NewConnector(user, passwd, net, addr, dbname string) *Connector {
 		cfg: cfg,
 	}
 
-	connection.HealthCheck()
+	if errMysqlHealthCheck := connection.HealthCheck(); errMysqlHealthCheck != nil {
+		return nil
+	}
 	connection.migrate()
 
 	return &connection

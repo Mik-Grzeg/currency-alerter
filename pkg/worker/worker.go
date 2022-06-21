@@ -59,7 +59,10 @@ func (w *Worker) Run() error {
 		case t := <-triggeredAlerts:
 			go func(trigAlert *triggeredAlert) {
 				log.Debug("Spawned go routine for notyfing")
-				mailer.NotifyViaMail(w.settings.MailerSettings, trigAlert)
+				notifyViaMailErr := mailer.NotifyViaMail(w.settings.MailerSettings, trigAlert)
+				if notifyViaMailErr != nil {
+					triggeredAlerts <- *trigAlert
+				}
 			}(&t)
 		case <-time.After(time.Duration(w.settings.ScrapeInterval/3) * time.Second):
 			go func() {

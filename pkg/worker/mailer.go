@@ -21,7 +21,7 @@ type MailerSettings struct {
 	ApiKey string
 }
 
-func (mgun *MailGun) NotifyViaMail(ms *MailerSettings, ta *triggeredAlert) (string, error) {
+func (mgun *MailGun) NotifyViaMail(ms *MailerSettings, ta *triggeredAlert) error {
 
 	mg := mailgun.NewMailgun(ms.Domain, ms.ApiKey)
 	m := mg.NewMessage(
@@ -34,12 +34,13 @@ func (mgun *MailGun) NotifyViaMail(ms *MailerSettings, ta *triggeredAlert) (stri
 	defer cancel()
 
 	// Send the message with a 10 second timeout
-	resp, id, err := mg.Send(ctx, m)
+	resp, id, mailSendingErr := mg.Send(ctx, m)
 
-	if err != nil {
-		log.Fatal(err)
+	if mailSendingErr != nil {
+		log.Errorf("Error while sending a mail: %+s", mailSendingErr)
+		return mailSendingErr
 	}
 
 	log.Debugf("ID: %s Resp: %s\n", id, resp)
-	return id, err
+	return nil
 }

@@ -30,7 +30,7 @@ func (s *Server) Run() error {
 	r := mux.NewRouter()
 
 	r.Handle("/alert", middleware.MiddlewareCorsHeader(middleware.MiddlewareLogging(s.createNewAlertHandler()))).Methods(http.MethodPost, http.MethodOptions)
-	r.HandleFunc("/health", s.healthCheck).Methods(http.MethodGet)
+	r.Handle("/health", middleware.MiddlewareLogging(s.HealthCheckHanlder())).Methods(http.MethodGet)
 
 	log.Infof("Starting server on port :%d", s.settings.Port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", s.settings.Port), r))

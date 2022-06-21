@@ -12,6 +12,7 @@ func (w *Worker) getAlerts() []*Alert {
 	rows, queryErr := w.con.Db.Query(getAllAlertsQuery)
 	if queryErr != nil {
 		log.Errorf("There has been error while processing query: %v", queryErr)
+		return nil
 	}
 
 	defer rows.Close()
@@ -26,7 +27,9 @@ func (w *Worker) getAlerts() []*Alert {
 			email    string
 		)
 
-		rows.Scan(&id, &money, &currency, &operator, &email)
+		if errScan := rows.Scan(&id, &money, &currency, &operator, &email); errScan != nil {
+			log.Errorf("Couldn't scan all the results while getting all the alerts: %+v", errScan)
+		}
 		alerts = append(alerts, &Alert{
 			Id:        id,
 			Money:     money,
@@ -78,7 +81,7 @@ func (w *Worker) triggerAlerts(alerts []*Alert, c map[string]float32, triggeredA
 
 	rowsAffected, rowsAffectedErr := results.RowsAffected()
 	if rowsAffectedErr != nil {
-		log.Errorf("Could not retrieve how many rows were affected", updateErr)
+		log.Errorf("Could not retrieve how many rows were affected: %+v", updateErr)
 		return updateErr
 	}
 
@@ -96,7 +99,10 @@ type triggeredAlert struct {
 
 func checkAlerts(w *Worker, c map[string]float32, triggeredAlertsChan chan triggeredAlert) {
 	alerts := w.getAlerts()
+
 	log.Info("Checking alerts ...")
 
-	w.triggerAlerts(alerts, c, triggeredAlertsChan)
+	if errTrigeringAlerts := w.triggerAlerts(alerts, c, triggeredAlertsChan); errTrigeringAlerts != nil {
+		log.Errorf("Error occured while trying to trigger alerts: %+v", errTrigeringAlerts)
+	}
 }

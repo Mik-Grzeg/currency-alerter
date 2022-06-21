@@ -11,20 +11,24 @@ import (
 func (s *Server) createNewAlertHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		reqBody, _ := ioutil.ReadAll(r.Body)
+		w.Header().Set("Content-Type", "application/json")
 
 		var newAlert Alert
-		json.Unmarshal(reqBody, &newAlert)
-		w.Header().Set("Content-Type", "application/json")
+		if unmarshallErr := json.Unmarshal(reqBody, &newAlert); unmarshallErr != nil {
+			log.Errorf("Serializing received data has failed: %+v", unmarshallErr)
+			w.WriteHeader(http.StatusBadRequest)
+			_ = json.NewEncoder(w).Encode("err: Serializing received data has failed")
+		}
 
 		createdAlertErr := s.AddAlert(&newAlert)
 		if createdAlertErr != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode("err: Creating an alert failed. Something went wrong")
+			_ = json.NewEncoder(w).Encode("err: Creating an alert failed. Something went wrong")
 		} else {
 			log.Debugf("Configured an alert: %v ", newAlert)
 
 			w.WriteHeader(http.StatusCreated)
-			json.NewEncoder(w).Encode(newAlert)
+			_ = json.NewEncoder(w).Encode(newAlert)
 		}
 	})
 }
