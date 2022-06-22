@@ -4,19 +4,18 @@
     <Transition>
       <currency-notify v-if="isRun" :typeOfAlert="this.typeOfAlert" :alertValue="alertValue"/>
     </Transition>
-    <CurrenctForm @createdNotification="createdNotification(alert)" />
+    <CurrenctForm @createdNotification="createdNotification" />
   </div>
 </template>
 
-<script lang="js">
-import { defineComponent } from 'vue';
+<script>
 import CurrenctForm from '../components/currenct-form.vue';
 import CurrencyNotify from "@/components/currency-notify.vue";
 import apiService from "@/service/apiService";
 
 
 
-export default defineComponent({
+export default {
   data: () => ({
     isRun: false,
     typeOfAlert:"success",
@@ -30,21 +29,23 @@ export default defineComponent({
   methods: {
 
 
-    createdNotification(alert) {
-      apiService.postAlert(alert)
+    createdNotification(payloadAlert) {
+      payloadAlert.money = parseFloat(payloadAlert.money)
+      console.log(payloadAlert)
+      apiService.postAlert(payloadAlert)
       .then(()=>{
         this.typeOfAlert = "success"
         this.alertValue = "Alert pomyślnie ustawiono"
       })
       .catch(()=> {
         this.typeOfAlert = "error"
-        this.alertValue = "Błąd w przesyłaniu danych "
+        this.alertValue = "Błąd w przesyłaniu danych"
       })
       this.isRun = true
       setTimeout( () =>this.isRun = false,3000)
     }
   }
-});
+};
 </script>
 <style>
 #home {

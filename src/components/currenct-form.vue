@@ -7,7 +7,7 @@
 
         >
           <v-text-field
-            v-model="alert.email"
+            v-model="payloadAlert.email"
             :rules="emailRules"
             label="E-mail"
             filled
@@ -22,7 +22,7 @@
             <v-select
             filled
           :items="['EUR','USD','CHF']"
-          v-model="alert.currency"
+          v-model="payloadAlert.currency"
           label="Currency"
           dense
         ></v-select>
@@ -32,7 +32,7 @@
 
         >
             <v-select
-          v-model="alert.threshold"
+          v-model="payloadAlert.threshold"
           :items="['<','>']"
           label="Threshold"
           dense
@@ -44,7 +44,7 @@
 
         >
           <v-text-field
-            v-model="alert.money"
+            v-model="payloadAlert.money"
             label="Cash limit"
             filled
             required
@@ -56,7 +56,7 @@
             <v-btn
                 class="mr-4 buttons-width"
                 color="success"
-                @click="$emit('createdNotification',alert)"
+                @click="$emit('createdNotification',payloadAlert)"
                 >
                 submit
              </v-btn>
@@ -70,45 +70,32 @@
     </v-container>
   </v-form>
 </template>
-<script lang="ts">
-import apiService from "@/service/apiService"
-type alert = {
-  money: string,
-  currency: string,
-  threshold: string,
-  email: string,
-}
+<script>
+
   export default {
     data: () => ({
       valid: false,
-      alert: {
+      payloadAlert: {
         money:'',
         currency:'',
         threshold:'',
         email: '',
-      } as alert,
+      },
       nameRules: [
-        (        v: string) => !!v || 'Name is required',
-        (        v: string) => v.length <= 10 || 'Name must be less than 10 characters',
+        (        v) => !!v || 'Name is required',
+        (        v) => v.length <= 10 || 'Name must be less than 10 characters',
       ],
       emailRules: [
-        (        v: string) => !!v || 'E-mail is required',
-        (        v: string) => /.+@.+/.test(v) || 'E-mail must be valid',
+        (        v) => !!v || 'E-mail is required',
+        (        v) => /.+@.+/.test(v) || 'E-mail must be valid',
       ],
     }),
     methods: {
-      alert: {
-        money:'',
-        currency:'',
-        threshold:'',
-        email: '',
-      } as alert,
-
-        reset(): void {
-            this.alert.email = ''
-            this.alert.money = ''
-            this.alert.currency = ''
-            this.alert.threshold = ''
+        reset() {
+          this.payloadAlert.email = ''
+          this.payloadAlert.money = ''
+          this.payloadAlert.currency = ''
+          this.payloadAlert.threshold = ''
         },
     }
   }

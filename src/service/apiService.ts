@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiClinet:any = axios.create({
-    baseURL: '',
+    baseURL: 'http://localhost:8000',
     headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'
@@ -12,6 +12,6 @@ const apiClinet:any = axios.create({
 
 export default {
     postAlert(alert:object){
-        return apiClinet.post('',alert)
+        return apiClinet.post('/alert',alert)
     }
 }
